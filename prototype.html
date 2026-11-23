@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Платформа колледжа</title>
+<style>
+  :root {
+    --primary: #1f4e79;
+    --primary-light: #2a6bab;
+    --accent: #ffc107;
+    --bg: #f2f5f9;
+    --card: #ffffff;
+    --text: #2b3440;
+    --muted: #7b8794;
+    --border: #dfe5ec;
+    --danger: #b3261e;
+    --danger-bg: #fdecea;
+    --success: #1e7e34;
+    --success-bg: #e6f4ea;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  header {
+    background: linear-gradient(135deg, #1f4e79 0%, #2a6bab 100%);
+    color: #fff;
+    padding: 28px 40px 0;
+    box-shadow: 0 2px 12px rgba(31, 78, 121, .35);
+  }
+  header h1 { font-size: 26px; font-weight: 600; margin-bottom: 4px; }
+  header p { color: #cfe0f0; font-size: 14px; margin-bottom: 20px; }
+  nav { display: flex; gap: 4px; flex-wrap: wrap; }
+  nav button {
+    background: transparent;
+    border: none;
+    color: #cfe0f0;
+    padding: 12px 24px;
+    font-size: 15px;
+    border-radius: 10px 10px 0 0;
+    cursor: pointer;
+    transition: background .2s, color .2s;
+  }
+  nav button:hover { background: rgba(255,255,255,.12); color: #fff; }
+  nav button.active { background: var(--bg); color: var(--primary); font-weight: 600; }
+
+  main {
+    max-width: 1100px;
+    margin: 32px auto;
+    padding: 0 24px;
+    display: grid;
+    gap: 32px;
+  }
+
+  .tab-page { display: none; }
+  .tab-page.active { display: contents; }
+
+  section h2 {
+    font-size: 19px;
+    color: var(--primary);
+    margin-bottom: 14px;
+    padding-left: 12px;
+    border-left: 4px solid var(--accent);
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(43, 52, 64, .06);
+  }
+  form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    align-items: end;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  input, select {
+    padding: 10px 12px;
+    border: 1px solid #c4ccd6;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fbfcfd;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(42, 107, 171, .15);
+  }
+  input.invalid {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(179, 38, 30, .15);
+  }
+  .field-error {
+    color: var(--danger);
+    font-size: 12px;
+    display: none;
+  }
+  select {
+    background-image: linear-gradient(45deg, transparent 50%, #7b8794 50%),
+                      linear-gradient(135deg, #7b8794 50%, transparent 50%);
+    background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+    appearance: none;
+  }
+  button[type="submit"], .btn-primary {
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 22px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s, transform .1s;
+    white-space: nowrap;
+  }
+  button[type="submit"]:hover, .btn-primary:hover { background: var(--primary-light); }
+  button[type="submit"]:active, .btn-primary:active { transform: scale(.97); }
+
+  .table-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow-x: auto;
+    box-shadow: 0 1px 4px rgba(43, 52, 64, .06);
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+  th {
+    background: #eef2f6;
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #f7fafd; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge.active  { background: var(--success-bg); color: var(--success); }
+  .badge.archive { background: #e8eaf6; color: #3949ab; }
+  .badge.none    { background: #eef0f3; color: var(--muted); }
+
+  .actions { display: flex; gap: 6px; }
+  .btn-sm {
+    border: none;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter .2s;
+  }
+  .btn-green { background: var(--success-bg); color: var(--success); }
+  .btn-red   { background: var(--danger-bg);  color: var(--danger); }
+  .btn-blue  { background: #e8eaf6; color: #3949ab; }
+  .btn-sm:hover { filter: brightness(.95); }
+
+  .archived-text { color: var(--muted); font-style: italic; font-size: 13px; }
+
+  .totals td { background: #eef2f6; font-weight: 700; color: var(--primary); }
+  .good { color: var(--success); font-weight: 600; }
+  .warn { color: #c77700; font-weight: 600; }
+  .bad  { color: var(--danger);  font-weight: 600; }
+
+  .report-title { margin: 16px 0 8px; font-size: 16px; color: var(--primary); }
+  .hint { color: var(--muted); font-size: 14px; margin-top: 10px; }
+
+  #grades-area { margin-top: 14px; }
+  #grades-area .inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0;
+    font-size: 14px;
+    color: var(--text);
+  }
+  #grades-area input { width: 180px; padding: 6px 10px; }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding: 24px 0 32px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Платформа колледжа</h1>
+  <p>Прототип веб-приложения: учёт учеников, курсов, преподавателей и успеваемости</p>
+  <nav>
+    <button class="tab active" data-tab="students">Ученики</button>
+    <button class="tab" data-tab="courses">Курсы</button>
+    <button class="tab" data-tab="teachers">Преподаватели</button>
+    <button class="tab" data-tab="reports">Отчёты</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ===== УЧЕНИКИ ===== -->
+  <div class="tab-page active" id="page-students">
+
+    <section>
+      <h2>Добавить ученика</h2>
+      <form class="card" id="student-form" novalidate>
+        <label>ФИО
+          <input name="fullName" type="text" id="f-name" placeholder="Иванов Иван Иванович">
+          <span class="field-error" id="err-name"></span>
+        </label>
+        <label>Дата рождения
+          <input name="birthDate" type="date" id="f-birth">
+          <span class="field-error" id="err-birth"></span>
+        </label>
+        <label>Пол
+          <select name="gender" id="f-gender">
+            <option value="М">Мужской</option>
+            <option value="Ж">Женский</option>
+          </select>
+        </label>
+        <label>Контакты (e-mail или телефон)
+          <input name="contacts" type="text" id="f-contacts" placeholder="petrov@mail.ru или +7 900 123-45-67">
+          <span class="field-error" id="err-contacts"></span>
+        </label>
+        <button type="submit">Добавить</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Список учеников</h2>
+      <div class="table-wrap">
+        <table id="students-table">
+          <thead>
+            <tr>
+              <th>ФИО</th><th>Дата рождения</th><th>Пол</th>
+              <th>Контакты</th><th>Курс</th><th>Действия</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Зачислить на курс</h2>
+      <form class="card" id="enroll-form">
+        <label>Ученик
+          <select name="studentId" required></select>
+        </label>
+        <label>Курс
+          <select name="courseId" required></select>
+        </label>
+        <button type="submit">Зачислить</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Оценки</h2>
+      <div class="card" id="grades-area">
+        <span class="hint">Нажмите «Оценки» у ученика в списке, чтобы выставить оценки по предметам его курса.</span>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ===== КУРСЫ ===== -->
+  <div class="tab-page" id="page-courses">
+
+    <section>
+      <h2>Добавить курс</h2>
+      <form class="card" id="course-form">
+        <label>Название курса
+          <input name="title" type="text" placeholder="Например: Веб-разработка" required>
+        </label>
+        <button type="submit">Добавить</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Задать предметы курса</h2>
+      <form class="card" id="subjects-form">
+        <label>Курс
+          <select name="courseId" required></select>
+        </label>
+        <label>Предметы (через запятую)
+          <input name="subjects" type="text" placeholder="Математика, Программирование" required>
+        </label>
+        <button type="submit">Сохранить</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Список курсов</h2>
+      <div class="table-wrap">
+        <table id="courses-table">
+          <thead>
+            <tr><th>Курс</th><th>Предметы</th><th>Преподаватели</th><th>Статус</th><th>Действия</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ===== ПРЕПОДАВАТЕЛИ ===== -->
+  <div class="tab-page" id="page-teachers">
+
+    <section>
+      <h2>Добавить преподавателя</h2>
+      <form class="card" id="teacher-form" novalidate>
+        <label>ФИО
+          <input name="fullName" type="text" id="t-name" placeholder="Смирнова Ольга Викторовна">
+          <span class="field-error" id="terr-name"></span>
+        </label>
+        <label>Предмет
+          <input name="subject" type="text" id="t-subject" placeholder="Программирование">
+          <span class="field-error" id="terr-subject"></span>
+        </label>
+        <label>Курс (необязательно)
+          <select name="courseId" id="t-course"></select>
+        </label>
+        <label>Контакты (e-mail или телефон)
+          <input name="contacts" type="text" id="t-contacts" placeholder="smirnova@mail.ru или +7 900 111-22-33">
+          <span class="field-error" id="terr-contacts"></span>
+        </label>
+        <button type="submit">Добавить</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Список преподавателей</h2>
+      <div class="table-wrap">
+        <table id="teachers-table">
+          <thead>
+            <tr><th>ФИО</th><th>Предмет</th><th>Курс</th><th>Контакты</th><th>Действия</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ===== ОТЧЁТЫ ===== -->
+  <div class="tab-page" id="page-reports">
+
+    <section>
+      <h2>Средние оценки по ученикам курса</h2>
+      <form class="card" id="course-report-form">
+        <label>Курс
+          <select name="courseId" required></select>
+        </label>
+        <button type="submit">Показать</button>
+      </form>
+      <div id="course-report"></div>
+    </section>
+
+    <section>
+      <h2>Средние оценки ученика по предметам</h2>
+      <form class="card" id="student-report-form">
+        <label>Ученик
+          <select name="studentId" required></select>
+        </label>
+        <button type="submit">Показать</button>
+      </form>
+      <div id="student-report"></div>
+    </section>
+
+  </div>
+
+</main>
+
+<footer>
+  Прототип платформы колледжа · данные хранятся в браузере (localStorage)
+</footer>
+
+<script>
+'use strict';
+
+// ================= Данные =================
+const KEY = 'college-app-data-v5';
+
+let db = {
+  nextId: 20,
+  students: [
+    { id: 0, fullName: 'Иванов Иван Иванович', birthDate: '2006-05-14',
+      contacts: 'ivanov@mail.ru', gender: 'М', courseId: 0, grades: {} },
+    { id: 1, fullName: 'Петрова Анна Сергеевна', birthDate: '2007-11-02',
+      contacts: 'petrova@mail.ru', gender: 'Ж', courseId: 1, grades: {} },
+    { id: 2, fullName: 'Сидоров Павел Олегович', birthDate: '2007-01-23',
+      contacts: '+7 903 555-12-34', gender: 'М', courseId: null, grades: {} }
+  ],
+  courses: [
+    { id: 0, title: 'Информационные системы',
+      subjects: ['Математика', 'Программирование', 'Базы данных'], archivedAt: null },
+    { id: 1, title: 'Программисты',
+      subjects: ['Программирование', 'Алгоритмы', 'Веб-разработка'], archivedAt: null }
+  ],
+  teachers: [
+    // { id, fullName, subject, courseId, contacts }
+    { id: 10, fullName: 'Кузнецова Мария Александровна', subject: 'Математика',
+      courseId: 0, contacts: 'kuznetsova@college.ru' },
+    { id: 11, fullName: 'Соколов Дмитрий Павлович', subject: 'Программирование',
+      courseId: 0, contacts: '+7 910 222-33-44' },
+    { id: 12, fullName: 'Морозова Елена Дмитриевна', subject: 'Алгоритмы',
+      courseId: 1, contacts: 'morozova@college.ru' }
+  ]
+};
+
+// демо-оценки для отчётов при первом открытии
+db.students[0].grades[0] = { 'Математика': [5, 4], 'Программирование': [5, 5, 4], 'Базы данных': [4, 5] };
+db.students[1].grades[1] = { 'Программирование': [4, 5], 'Алгоритмы': [3, 4], 'Веб-разработка': [5, 5] };
+
+try {
+  const saved = localStorage.getItem(KEY);
+  if (saved) db = JSON.parse(saved);
+} catch (e) { /* первое открытие — остаются демо-данные */ }
+
+function save() { localStorage.setItem(KEY, JSON.stringify(db)); }
+
+// ================= Утилиты =================
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g,
+  c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const courseOf = id => db.courses.find(c => c.id === id);
+const studentOf = id => db.students.find(s => s.id === id);
+const avg = arr => (arr && arr.length) ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+const fmt = v => (v === null || v === undefined) ? '—' : v.toFixed(2).replace('.', ',');
+const cls = v => v === null ? '' : v >= 4.5 ? 'good' : v >= 3.5 ? 'warn' : 'bad';
+
+// ================= Проверки ввода =================
+const nameRe = /^[А-ЯЁа-яёA-Za-z][А-ЯЁа-яёA-Za-z\- ]*$/;   // буквы, пробелы, дефисы
+const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;               // вид текст@текст.текст
+const digitCount = str => (str.match(/\d/g) || []).length;
+
+const MIN_AGE = 16;
+
+// Полных лет на текущую дату (с учётом месяца и дня рождения)
+function fullAge(birthDate) {
+  const birth = new Date(birthDate);
+  if (isNaN(birth)) return -1;
+  const now = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  const m = now.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+  return age;
+}
+
+// Проверка контактов: e-mail или телефон минимум из 10 цифр
+function checkContacts(contacts) {
+  const isEmail = emailRe.test(contacts);
+  const isPhone = /^[\d\+\s\-]+$/.test(contacts) && digitCount(contacts) >= 10;
+  return { isEmail, isPhone };
+}
+
+// Красная рамка + текст ошибки под полем
+function showError(inputId, errorId, message) {
+  $('#' + inputId).classList.add('invalid');
+  const el = $('#' + errorId);
+  el.textContent = message;
+  el.style.display = 'block';
+}
+function clearError(inputId, errorId) {
+  $('#' + inputId).classList.remove('invalid');
+  $('#' + errorId).style.display = 'none';
+}
+
+// ================= Вкладки =================
+document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  $('#page-' + btn.dataset.tab).classList.add('active');
+}));
+
+// ================= Рендер =================
+function renderStudents() {
+  $('#students-table tbody').innerHTML = db.students.map(s => `
+    <tr>
+      <td>${esc(s.fullName)}</td>
+      <td>${esc(new Date(s.birthDate).toLocaleDateString('ru-RU'))}</td>
+      <td>${esc(s.gender)}</td>
+      <td>${esc(s.contacts) || '—'}</td>
+      <td>${
+        s.courseId === null || s.courseId === undefined
+          ? '<span class="badge none">Не зачислен</span>'
+          : `<span class="badge active">${esc(courseOf(s.courseId)?.title || '—')}</span>`
+      }</td>
+      <td class="actions">
+        <button class="btn-sm btn-green" onclick="openGrades(${s.id})">Оценки</button>
+        <button class="btn-sm btn-red" onclick="deleteStudent(${s.id})">Удалить</button>
+      </td>
+    </tr>`).join('');
+}
+
+function teachersOfCourse(courseId) {
+  return db.teachers
+    .filter(t => t.courseId === courseId)
+    .map(t => `${esc(t.fullName)} (${esc(t.subject)})`)
+    .join(', ');
+}
+
+function renderCourses() {
+  $('#courses-table tbody').innerHTML = db.courses.map(c => `
+    <tr>
+      <td>${esc(c.title)}</td>
+      <td>${c.subjects.map(esc).join(', ') || '—'}</td>
+      <td>${teachersOfCourse(c.id) || '—'}</td>
+      <td>${
+        c.archivedAt
+          ? `<span class="badge archive">В архиве</span>
+             <div class="archived-text">с ${new Date(c.archivedAt).toLocaleDateString('ru-RU')}</div>`
+          : '<span class="badge active">Активен</span>'
+      }</td>
+      <td>
+        <button class="btn-sm btn-blue" onclick="toggleArchive(${c.id})">
+          ${c.archivedAt ? 'Вернуть' : 'В архив'}
+        </button>
+      </td>
+    </tr>`).join('');
+}
+
+function renderTeachers() {
+  $('#teachers-table tbody').innerHTML = db.teachers.map(t => `
+    <tr>
+      <td>${esc(t.fullName)}</td>
+      <td>${esc(t.subject)}</td>
+      <td>${
+        t.courseId === null || t.courseId === undefined
+          ? '<span class="badge none">Не привязан</span>'
+          : `<span class="badge active">${esc(courseOf(t.courseId)?.title || '—')}</span>`
+      }</td>
+      <td>${esc(t.contacts) || '—'}</td>
+      <td class="actions">
+        <button class="btn-sm btn-red" onclick="deleteTeacher(${t.id})">Удалить</button>
+      </td>
+    </tr>`).join('');
+}
+
+function fillSelects() {
+  const stOpts = db.students.map(s =>
+    `<option value="${s.id}">${esc(s.fullName)}</option>`).join('');
+  const cOpts = db.courses.filter(c => !c.archivedAt)
+    .map(c => `<option value="${c.id}">${esc(c.title)}</option>`).join('');
+  const allCOpts = db.courses
+    .map(c => `<option value="${c.id}">${esc(c.title)}${c.archivedAt ? ' (архив)' : ''}</option>`).join('');
+
+  $('#enroll-form [name=studentId]').innerHTML = stOpts;
+  $('#enroll-form [name=courseId]').innerHTML = cOpts;
+  $('#subjects-form [name=courseId]').innerHTML = allCOpts;
+  $('#course-report-form [name=courseId]').innerHTML = allCOpts;
+  $('#student-report-form [name=studentId]').innerHTML = stOpts;
+
+  // селект курса в форме преподавателя: без курса (по умолчанию) + все курсы
+  $('#t-course').innerHTML =
+    '<option value="">— без привязки к курсу —</option>' +
+    db.courses.map(c =>
+      `<option value="${c.id}">${esc(c.title)}${c.archivedAt ? ' (архив)' : ''}</option>`).join('');
+}
+
+function renderAll() { renderStudents(); renderCourses(); renderTeachers(); fillSelects(); }
+
+// ================= Ученики (с проверками) =================
+$('#student-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const fd = Object.fromEntries(new FormData(e.target));
+  const fullName = fd.fullName.trim();
+  const contacts = fd.contacts.trim();
+
+  clearError('f-name', 'err-name');
+  clearError('f-birth', 'err-birth');
+  clearError('f-contacts', 'err-contacts');
+
+  let ok = true;
+
+  // --- ФИО: без цифр ---
+  if (!nameRe.test(fullName)) {
+    const msg = /\d/.test(fullName)
+      ? 'В имени и фамилии нельзя писать цифры — только буквы, пробелы и дефис.'
+      : 'ФИО заполнено некорректно. Разрешены только буквы, пробелы и дефис (например: Иванов Иван Иванович).';
+    showError('f-name', 'err-name', msg);
+    ok = false;
+  }
+
+  // --- Дата рождения: минимум 16 лет ---
+  if (!fd.birthDate) {
+    showError('f-birth', 'err-birth', 'Укажите дату рождения');
+    ok = false;
+  } else {
+    const age = fullAge(fd.birthDate);
+    if (age < MIN_AGE) {
+      const msg = age < 0
+        ? 'Дата рождения указана некорректно'
+        : `Ученику сейчас ${age} лет — минимальный возраст для записи: 16 лет`;
+      showError('f-birth', 'err-birth', msg);
+      ok = false;
+    }
+  }
+
+  // --- Контакты: e-mail или телефон ---
+  const { isEmail, isPhone } = checkContacts(contacts);
+  if (!contacts) {
+    showError('f-contacts', 'err-contacts', 'Укажите контакты: e-mail или телефон.');
+    ok = false;
+  } else if (!isEmail && !isPhone) {
+    const msg = contacts.includes('@')
+      ? 'Адрес e-mail неполный — нужен вид ivanov@mail.ru.'
+      : 'Это не похоже на телефон — нужно минимум 10 цифр (например +7 900 123-45-67).';
+    showError('f-contacts', 'err-contacts', msg);
+    ok = false;
+  }
+
+  if (!ok) return;
+
+  db.students.push({
+    id: db.nextId++,
+    fullName,
+    birthDate: fd.birthDate,
+    contacts,
+    gender: fd.gender,
+    courseId: null,
+    grades: {}
+  });
+  save(); e.target.reset(); renderAll();
+});
+
+function deleteStudent(id) {
+  if (!confirm('Удалить ученика вместе с его оценками?')) return;
+  db.students = db.students.filter(s => s.id !== id);
+  save(); renderAll();
+}
+
+// ================= Курсы =================
+$('#course-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const fd = Object.fromEntries(new FormData(e.target));
+  db.courses.push({ id: db.nextId++, title: fd.title.trim(), subjects: [], archivedAt: null });
+  save(); e.target.reset(); renderAll();
+});
+
+$('#subjects-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const fd = Object.fromEntries(new FormData(e.target));
+  const course = courseOf(Number(fd.courseId));
+  if (!course) return;
+  fd.subjects.split(',').map(s => s.trim()).filter(Boolean)
+    .forEach(s => { if (!course.subjects.includes(s)) course.subjects.push(s); });
+  save(); e.target.reset(); renderAll();
+});
+
+function toggleArchive(id) {
+  const c = courseOf(id);
+  if (!c) return;
+  if (c.archivedAt) {
+    c.archivedAt = null;
+  } else {
+    const busy = db.students.some(s => s.courseId === c.id);
+    if (busy && !confirm('На курс зачислены ученики. Всё равно отправить его в архив? (зачисление останется, но новые добавить нельзя)')) return;
+    c.archivedAt = new Date().toISOString();
+  }
+  save(); renderAll();
+}
+
+// ================= Зачисление =================
+$('#enroll-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const fd = Object.fromEntries(new FormData(e.target));
+  const s = studentOf(Number(fd.studentId));
+  const c = courseOf(Number(fd.courseId));
+  if (!s || !c) return;
+  if (c.archivedAt) return alert('Курс в архиве — зачисление недоступно');
+  s.courseId = c.id;
+  if (!s.grades[c.id]) s.grades[c.id] = {};
+  save(); renderAll();
+});
+
+// ================= Преподаватели (с проверками) =================
+$('#teacher-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const fd = Object.fromEntries(new FormData(e.target));
+  const fullName = fd.fullName.trim();
+  const subject = fd.subject.trim();
+  const contacts = fd.contacts.trim();
+
+  clearError('t-name', 'terr-name');
+  clearError('t-subject', 'terr-subject');
+  clearError('t-contacts', 'terr-contacts');
+
+  let ok = true;
+
+  // --- ФИО: без цифр ---
+  if (!nameRe.test(fullName)) {
+    const msg = /\d/.test(fullName)
+      ? 'В имени и фамилии нельзя писать цифры — только буквы, пробелы и дефис.'
+      : 'ФИО заполнено некорректно. Разрешены только буквы, пробелы и дефис.';
+    showError('t-name', 'terr-name', msg);
+    ok = false;
+  }
+
+  // --- Предмет: не пустой и без цифр ---
+  if (!subject) {
+    showError('t-subject', 'terr-subject', 'Укажите предмет преподавателя');
+    ok = false;
+  } else if (/\d/.test(subject)) {
+    showError('t-subject', 'terr-subject', 'В названии предмета не может быть цифр');
+    ok = false;
+  }
+
+  // --- Контакты: e-mail или телефон ---
+  const { isEmail, isPhone } = checkContacts(contacts);
+  if (!contacts) {
+    showError('t-contacts', 'terr-contacts', 'Укажите контакты: e-mail или телефон.');
+    ok = false;
+  } else if (!isEmail && !isPhone) {
+    const msg = contacts.includes('@')
+      ? 'Адрес e-mail неполный — нужен вид smirnova@mail.ru.'
+      : 'Это не похоже на телефон — нужно минимум 10 цифр (например +7 900 111-22-33).';
+    showError('t-contacts', 'terr-contacts', msg);
+    ok = false;
+  }
+
+  if (!ok) return;
+
+  db.teachers.push({
+    id: db.nextId++,
+    fullName,
+    subject,
+    courseId: fd.courseId === '' ? null : Number(fd.courseId),
+    contacts
+  });
+  save(); e.target.reset(); renderAll();
+});
+
+function deleteTeacher(id) {
+  if (!confirm('Удалить преподавателя?')) return;
+  db.teachers = db.teachers.filter(t => t.id !== id);
+  save(); renderAll();
+}
+
+// ================= Оценки =================
+function openGrades(studentId) {
+  const s = studentOf(studentId);
+  const area = $('#grades-area');
+  if (s.courseId === null || s.courseId === undefined) {
+    area.innerHTML = '<span class="hint">Ученик не зачислен ни на один курс.</span>';
+    return;
+  }
+  const c = courseOf(s.courseId);
+  const grades = s.grades[c.id] || {};
+  if (!c.subjects.length) {
+    area.innerHTML = '<span class="hint">У курса «' + esc(c.title) + '» ещё нет предметов — задайте их на вкладке «Курсы».</span>';
+    return;
+  }
+  area.innerHTML = `
+    <b>${esc(s.fullName)} — ${esc(c.title)}</b>
+    ${c.subjects.map(sub => `
+      <div class="inline">
+        ${esc(sub)} (сейчас: ${fmt(avg(grades[sub]))}):
+        <input data-sub="${esc(sub)}" placeholder="новые оценки через запятую">
+      </div>`).join('')}
+    <button type="button" class="btn-primary" onclick="saveGrades(${studentId})">Сохранить оценки</button>`;
+}
+
+function saveGrades(studentId) {
+  const s = studentOf(studentId);
+  const c = courseOf(s.courseId);
+  const grades = s.grades[c.id] = s.grades[c.id] || {};
+  let added = false;
+  document.querySelectorAll('#grades-area input[data-sub]').forEach(inp => {
+    if (!inp.value.trim()) return;
+    const marks = inp.value.split(',').map(x => Number(x.trim()))
+      .filter(n => Number.isInteger(n) && n >= 2 && n <= 5);
+    if (marks.length) {
+      grades[inp.dataset.sub] = (grades[inp.dataset.sub] || []).concat(marks);
+      added = true;
+    }
+  });
+  if (!added) return alert('Введите оценки от 2 до 5, например: 4, 5, 3');
+  save(); renderAll(); openGrades(studentId);
+}
+
+// ================= Отчёт по курсу =================
+$('#course-report-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const c = courseOf(Number(new FormData(e.target).get('courseId')));
+  if (!c) return;
+  const target = $('#course-report');
+
+  const rows = db.students.filter(s => s.courseId === c.id).map(s => {
+    const grades = s.grades[c.id] || {};
+    const subjectAvg = Object.fromEntries(c.subjects.map(sub => [sub, avg(grades[sub])]));
+    const all = c.subjects.flatMap(sub => grades[sub] || []);
+    return { name: s.fullName, subjectAvg, totalAvg: avg(all) };
+  });
+
+  if (!c.subjects.length) { target.innerHTML = '<span class="hint">У курса нет предметов.</span>'; return; }
+  if (!rows.length) { target.innerHTML = '<span class="hint">На курс ещё никто не зачислен.</span>'; return; }
+
+  const courseAvg = Object.fromEntries(c.subjects.map(sub => {
+    const vals = rows.map(r => r.subjectAvg[sub]).filter(v => v !== null);
+    return [sub, avg(vals)];
+  }));
+
+  target.innerHTML = `
+    <h3 class="report-title">${esc(c.title)}${c.archivedAt ? ' (архив)' : ''}</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Ученик</th>${c.subjects.map(s => `<th>${esc(s)}</th>`).join('')}<th>Средний балл</th></tr>
+        </thead>
+        <tbody>
+          ${rows.map(r => `<tr><td>${esc(r.name)}</td>${c.subjects.map(s =>
+            `<td class="${cls(r.subjectAvg[s])}">${fmt(r.subjectAvg[s])}</td>`).join('')}
+            <td class="${cls(r.totalAvg)}">${fmt(r.totalAvg)}</td></tr>`).join('')}
+          <tr class="totals">
+            <td>Средний по курсу</td>
+            ${c.subjects.map(s => `<td>${fmt(courseAvg[s])}</td>`).join('')}
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>`;
+});
+
+// ================= Отчёт по ученику =================
+$('#student-report-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const s = studentOf(Number(new FormData(e.target).get('studentId')));
+  if (!s) return;
+  const target = $('#student-report');
+
+  if (s.courseId === null || s.courseId === undefined) {
+    target.innerHTML = '<span class="hint">Ученик не зачислен ни на один курс.</span>';
+    return;
+  }
+  const c = courseOf(s.courseId);
+  const grades = s.grades[c.id] || {};
+  const all = c.subjects.flatMap(sub => grades[sub] || []);
+
+  target.innerHTML = `
+    <h3 class="report-title">${esc(s.fullName)} — ${esc(c.title)}</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Предмет</th><th>Средняя оценка</th></tr></thead>
+        <tbody>
+          ${c.subjects.map(sub =>
+            `<tr><td>${esc(sub)}</td><td class="${cls(avg(grades[sub]))}">${fmt(avg(grades[sub]))}</td></tr>`).join('')}
+          <tr class="totals"><td>Средний балл</td><td>${fmt(avg(all))}</td></tr>
+        </tbody>
+      </table>
+    </div>`;
+});
+
+renderAll();
+</script>
+</body>
+</html>
